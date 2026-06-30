@@ -9,6 +9,7 @@ export default function App() {
   const [error, setError] = useState(null)
   const [authorized, setAuthorized] = useState(true)
   const [passcode, setPasscode] = useState('')
+  const [showPasscode, setShowPasscode] = useState(false)
   const [toast, setToast] = useState(null)
 
   const showToast = useCallback((message, type = 'success') => {
@@ -80,13 +81,23 @@ export default function App() {
             <p>Enter the access key to view your dashboard.</p>
           </div>
           <form onSubmit={handleUnlock}>
-            <input
-              type="password"
-              placeholder="Enter Access Key"
-              value={passcode}
-              onChange={(e) => setPasscode(e.target.value)}
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showPasscode ? 'text' : 'password'}
+                placeholder="Enter Access Key"
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPasscode(!showPasscode)}
+                title={showPasscode ? "Hide Passcode" : "Show Passcode"}
+              >
+                <i className={showPasscode ? "ri-eye-off-line" : "ri-eye-line"}></i>
+              </button>
+            </div>
             <button type="submit">Unlock</button>
           </form>
           {error && <p className="field-error" style={{ position: 'static', marginTop: '12px', textAlign: 'center' }}>{error}</p>}

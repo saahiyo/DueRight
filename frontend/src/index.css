@@ -692,3 +692,39 @@ body {
   15%, 45%, 75% { transform: translateX(-6px); }
   30%, 60% { transform: translateX(6px); }
 }
+
+/* Password Visibility Toggle */
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.password-input-wrapper input {
+  margin-bottom: 0 !important;
+  padding-right: 44px !important;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none !important;
+  border: none !important;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: color 0.2s ease;
+  width: auto !important; /* Prevent taking full width */
+}
+
+.password-toggle-btn:hover {
+  color: var(--ink);
+  background: none !important;
+  transform: translateY(-50%) !important;
+}
