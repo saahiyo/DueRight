@@ -41,5 +41,6 @@ class Deadline(SQLModel, table=True):
     status: DeadlineStatus = DeadlineStatus.pending
     recurrence: RecurrenceType = RecurrenceType.none
     drafted_action: Optional[str] = None
+    user_id: Optional[str] = Field(default=None, index=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

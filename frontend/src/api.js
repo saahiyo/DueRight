@@ -1,14 +1,21 @@
+import { auth, isFirebaseAuthEnabled } from './firebase'
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-export const getApiKey = () => sessionStorage.getItem('API_ACCESS_KEY') || ''
-export const setApiKey = (key) => sessionStorage.setItem('API_ACCESS_KEY', key)
-export const clearApiKey = () => sessionStorage.removeItem('API_ACCESS_KEY')
+async function getSessionToken() {
+  if (!isFirebaseAuthEnabled()) {
+    return 'mock-token'
+  }
+  const user = auth.currentUser
+  if (!user) return ''
+  return user.getIdToken()
+}
 
 async function request(path, options = {}) {
   const headers = { 'Content-Type': 'application/json' }
-  const key = getApiKey()
-  if (key) {
-    headers['X-API-Key'] = key
+  const token = await getSessionToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
   }
   
   const res = await fetch(`${API_URL}${path}`, {
@@ -17,7 +24,6 @@ async function request(path, options = {}) {
   })
   
   if (res.status === 401) {
-    clearApiKey()
     throw new Error('UNAUTHORIZED')
   }
   

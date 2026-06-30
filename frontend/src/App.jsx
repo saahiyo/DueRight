@@ -1,16 +1,25 @@
 import { useEffect, useState, useCallback } from 'react'
-import { api, setApiKey } from './api'
+import { api } from './api'
 import AddDeadline from './components/AddDeadline'
 import DeadlineList from './components/DeadlineList'
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth'
+import { auth, isFirebaseAuthEnabled } from './firebase'
 
 export default function App() {
   const [deadlines, setDeadlines] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [authorized, setAuthorized] = useState(true)
-  const [passcode, setPasscode] = useState('')
   const [showPasscode, setShowPasscode] = useState(false)
   const [toast, setToast] = useState(null)
+
+  // Firebase Auth states
+  const [user, setUser] = useState(null)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [authMode, setAuthMode] = useState('login') // 'login' or 'register'
+  const [authLoading, setAuthLoading] = useState(false)
+  const [authError, setAuthError] = useState(null)
 
   const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type })
@@ -20,7 +29,7 @@ export default function App() {
     return () => clearTimeout(timeoutId)
   }, [])
 
-  const refresh = useCallback(async (isFormSubmit = false) => {
+  const refresh = useCallback(async () => {
     try {
       setError(null)
       const data = await api.list()
@@ -29,9 +38,6 @@ export default function App() {
     } catch (e) {
       if (e.message === 'UNAUTHORIZED') {
         setAuthorized(false)
-        if (isFormSubmit) {
-          setError('Incorrect access key. Please try again.')
-        }
       } else {
         setError(e.message)
       }
@@ -40,16 +46,73 @@ export default function App() {
     }
   }, [])
 
+  // Subscribe to Firebase Auth state
   useEffect(() => {
-    refresh()
+    if (!isFirebaseAuthEnabled()) {
+      setUser({ email: 'local-dev@dueright.com', uid: 'local-user-123' })
+      setAuthorized(true)
+      refresh()
+      return
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser)
+      if (currentUser) {
+        setAuthorized(true)
+        refresh()
+      } else {
+        setAuthorized(false)
+        setLoading(false)
+      }
+    })
+    return () => unsubscribe()
   }, [refresh])
 
-  function handleUnlock(e) {
+  async function handleAuthSubmit(e) {
     e.preventDefault()
-    if (!passcode.trim()) return
-    setApiKey(passcode.trim())
-    setLoading(true)
-    refresh(true)
+    if (!email.trim() || !password.trim()) return
+    setAuthLoading(true)
+    setAuthError(null)
+    try {
+      if (!isFirebaseAuthEnabled()) {
+        setUser({ email: email.trim(), uid: 'local-user-123' })
+        setAuthorized(true)
+        refresh()
+        showToast('Logged in successfully (Mock Auth).')
+      } else {
+        if (authMode === 'login') {
+          await signInWithEmailAndPassword(auth, email.trim(), password.trim())
+          showToast('Signed in successfully!')
+        } else {
+          await createUserWithEmailAndPassword(auth, email.trim(), password.trim())
+          showToast('Account registered successfully!')
+        }
+      }
+    } catch (err) {
+      let msg = err.message
+      if (msg.includes('auth/invalid-credential')) {
+        msg = 'Invalid email or password.'
+      } else if (msg.includes('auth/weak-password')) {
+        msg = 'Password should be at least 6 characters.'
+      } else if (msg.includes('auth/email-already-in-use')) {
+        msg = 'This email is already registered.'
+      } else if (msg.includes('auth/invalid-email')) {
+        msg = 'Please enter a valid email address.'
+      }
+      setAuthError(msg)
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  async function handleLogout() {
+    if (!isFirebaseAuthEnabled()) {
+      setUser(null)
+      setAuthorized(false)
+    } else {
+      await signOut(auth)
+    }
+    showToast('Logged out successfully.')
   }
 
   const active = deadlines.filter((d) => d.status !== 'resolved')
@@ -83,35 +146,65 @@ export default function App() {
   if (!authorized) {
     return (
       <div className="page lock-page">
-        <div className={`lock-card ${error ? 'shake' : ''}`}>
+        <div className={`lock-card ${authError ? 'shake' : ''}`}>
           <div className="lock-header">
             <span className="lock-icon" style={{ display: 'inline-flex', justifyContent: 'center', alignItems: 'center' }}>
-              <i className="ri-lock-2-line" style={{ fontSize: '32px', color: 'var(--ink-soft)' }}></i>
+              <i className="ri-shield-user-line" style={{ fontSize: '32px', color: 'var(--ink-soft)' }}></i>
             </span>
-            <h2>DueRight is Locked</h2>
-            <p>Enter the access key to view your dashboard.</p>
+            <h2>{authMode === 'login' ? 'Sign In to DueRight' : 'Create Account'}</h2>
+            <p>{authMode === 'login' ? 'Enter credentials to manage deadlines' : 'Register to get your personal board'}</p>
           </div>
-          <form onSubmit={handleUnlock}>
+          <form onSubmit={handleAuthSubmit}>
+            <input
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={authLoading}
+              style={{ textAlign: 'left', marginBottom: '12px' }}
+            />
             <div className="password-input-wrapper">
               <input
                 type={showPasscode ? 'text' : 'password'}
-                placeholder="Enter Access Key"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={authLoading}
+                style={{ textAlign: 'left' }}
               />
               <button
                 type="button"
                 className="password-toggle-btn"
                 onClick={() => setShowPasscode(!showPasscode)}
-                title={showPasscode ? "Hide Passcode" : "Show Passcode"}
+                title={showPasscode ? "Hide Password" : "Show Password"}
               >
                 <i className={showPasscode ? "ri-eye-off-line" : "ri-eye-line"}></i>
               </button>
             </div>
-            <button type="submit" className="lock-submit-btn">Unlock</button>
+            <button type="submit" className="lock-submit-btn" disabled={authLoading}>
+              {authLoading ? 'Connecting...' : authMode === 'login' ? 'Sign In' : 'Sign Up'}
+            </button>
           </form>
-          {error && <p className="field-error" style={{ position: 'static', marginTop: '12px', textAlign: 'center' }}>{error}</p>}
+          {authError && <p className="field-error" style={{ position: 'static', marginTop: '12px', textAlign: 'center' }}>{authError}</p>}
+          <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--ink-soft)' }}>
+            {authMode === 'login' ? (
+              <>
+                New to DueRight?{' '}
+                <button type="button" className="link-btn text-link" onClick={() => { setAuthMode('register'); setAuthError(null); }} style={{ background: 'none', border: 'none', padding: 0 }}>
+                  Create an account
+                </button>
+              </>
+            ) : (
+              <>
+                Already have an account?{' '}
+                <button type="button" className="link-btn text-link" onClick={() => { setAuthMode('login'); setAuthError(null); }} style={{ background: 'none', border: 'none', padding: 0 }}>
+                  Sign in
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     )
@@ -119,9 +212,26 @@ export default function App() {
 
   return (
     <div className="page">
-      <header className="header">
-        <h1>DueRight</h1>
-        <p className="tagline">The next step, ready before it&rsquo;s due.</p>
+      <header className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1>DueRight</h1>
+          <p className="tagline">The next step, ready before it&rsquo;s due.</p>
+        </div>
+        {user && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '13.5px', color: 'var(--ink-soft)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <i className="ri-user-line"></i> {user.email}
+            </span>
+            <button 
+              type="button" 
+              onClick={handleLogout} 
+              className="link-btn text-link" 
+              style={{ fontSize: '13.5px', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}
+            >
+              <i className="ri-logout-box-r-line"></i> Log out
+            </button>
+          </div>
+        )}
       </header>
 
       {!loading && (

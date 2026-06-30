@@ -29,6 +29,7 @@ class DeadlineRead(BaseModel):
     status: DeadlineStatus
     recurrence: RecurrenceType
     drafted_action: Optional[str] = None
+    user_id: Optional[str] = None
 
     class Config:
         from_attributes = True

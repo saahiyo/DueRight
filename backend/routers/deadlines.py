@@ -8,6 +8,7 @@ from database import get_session
 from models import Deadline, DeadlineStatus, UrgencyLevel, RecurrenceType
 from schemas import DeadlineCreate, DeadlineRead, DeadlineUpdateStatus
 import gemini_service as gemini
+from auth import get_current_user
 
 router = APIRouter(prefix="/deadlines", tags=["deadlines"])
 
@@ -41,7 +42,11 @@ def calculate_next_due_date(current_date: date, recurrence: str) -> date:
 
 
 @router.post("", response_model=DeadlineRead)
-def create_deadline(payload: DeadlineCreate, session: Session = Depends(get_session)):
+def create_deadline(
+    payload: DeadlineCreate,
+    session: Session = Depends(get_session),
+    uid: str = Depends(get_current_user),
+):
     """Create a deadline either from free text (Gemini parses it) or
     from structured fields (Gemini classifies urgency)."""
     if payload.text:
@@ -57,6 +62,7 @@ def create_deadline(payload: DeadlineCreate, session: Session = Depends(get_sess
             consequence=parsed.get("consequence"),
             urgency=parsed.get("urgency", "medium"),
             recurrence=parsed.get("recurrence", "none"),
+            user_id=uid,
         )
     else:
         if not (payload.title and payload.due_date):
@@ -77,6 +83,7 @@ def create_deadline(payload: DeadlineCreate, session: Session = Depends(get_sess
             consequence=payload.consequence,
             urgency=urgency,
             recurrence=payload.recurrence or RecurrenceType.none,
+            user_id=uid,
         )
 
     session.add(deadline)
@@ -86,17 +93,24 @@ def create_deadline(payload: DeadlineCreate, session: Session = Depends(get_sess
 
 
 @router.get("", response_model=List[DeadlineRead])
-def list_deadlines(session: Session = Depends(get_session)):
+def list_deadlines(
+    session: Session = Depends(get_session),
+    uid: str = Depends(get_current_user),
+):
     """List all deadlines, sorted by urgency then due date."""
-    deadlines = session.exec(select(Deadline)).all()
+    deadlines = session.exec(select(Deadline).where(Deadline.user_id == uid)).all()
     deadlines.sort(key=lambda d: (URGENCY_ORDER.get(d.urgency, 4), d.due_date))
     return deadlines
 
 
 @router.get("/{deadline_id}", response_model=DeadlineRead)
-def get_deadline(deadline_id: int, session: Session = Depends(get_session)):
+def get_deadline(
+    deadline_id: int,
+    session: Session = Depends(get_session),
+    uid: str = Depends(get_current_user),
+):
     deadline = session.get(Deadline, deadline_id)
-    if not deadline:
+    if not deadline or deadline.user_id != uid:
         raise HTTPException(status_code=404, detail="Deadline not found")
     return deadline
 
@@ -106,9 +120,10 @@ def update_status(
     deadline_id: int,
     payload: DeadlineUpdateStatus,
     session: Session = Depends(get_session),
+    uid: str = Depends(get_current_user),
 ):
     deadline = session.get(Deadline, deadline_id)
-    if not deadline:
+    if not deadline or deadline.user_id != uid:
         raise HTTPException(status_code=404, detail="Deadline not found")
     
     old_status = deadline.status
@@ -126,6 +141,7 @@ def update_status(
                 urgency=deadline.urgency,
                 recurrence=deadline.recurrence,
                 status=DeadlineStatus.pending,
+                user_id=uid,
             )
             session.add(new_deadline)
 
@@ -136,10 +152,14 @@ def update_status(
 
 
 @router.post("/{deadline_id}/draft-action", response_model=DeadlineRead)
-def generate_draft_action(deadline_id: int, session: Session = Depends(get_session)):
+def generate_draft_action(
+    deadline_id: int,
+    session: Session = Depends(get_session),
+    uid: str = Depends(get_current_user),
+):
     """The core agentic step: generate a ready-to-send action for this deadline."""
     deadline = session.get(Deadline, deadline_id)
-    if not deadline:
+    if not deadline or deadline.user_id != uid:
         raise HTTPException(status_code=404, detail="Deadline not found")
     draft = gemini.draft_action(
         deadline.title,
@@ -157,9 +177,13 @@ def generate_draft_action(deadline_id: int, session: Session = Depends(get_sessi
 
 
 @router.delete("/{deadline_id}")
-def delete_deadline(deadline_id: int, session: Session = Depends(get_session)):
+def delete_deadline(
+    deadline_id: int,
+    session: Session = Depends(get_session),
+    uid: str = Depends(get_current_user),
+):
     deadline = session.get(Deadline, deadline_id)
-    if not deadline:
+    if not deadline or deadline.user_id != uid:
         raise HTTPException(status_code=404, detail="Deadline not found")
     session.delete(deadline)
     session.commit()
