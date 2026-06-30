@@ -33,6 +33,10 @@ body {
 
 .header {
   margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
 }
 
 .header h1 {
@@ -450,9 +454,18 @@ body {
   cursor: not-allowed;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .page {
-    padding: 32px 16px 60px;
+    padding: 24px 16px 60px;
+  }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .user-profile-badge {
+    width: 100%;
+    justify-content: space-between;
   }
   .countdown {
     min-width: 58px;
@@ -460,6 +473,19 @@ body {
   }
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .manual-form {
+    grid-template-columns: 1fr;
+  }
+  .card-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .card-actions button {
+    width: 100%;
+    justify-content: center;
+    display: inline-flex;
+    align-items: center;
   }
 }
 
@@ -547,6 +573,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .draft-actions .divider {

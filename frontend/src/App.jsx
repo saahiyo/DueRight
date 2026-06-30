@@ -249,7 +249,7 @@ export default function App() {
 
   return (
     <div className="page">
-      <header className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header className="header">
         <div>
           <h1>DueRight</h1>
           <p className="tagline">The next step, ready before it&rsquo;s due.</p>
