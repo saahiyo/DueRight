@@ -88,6 +88,7 @@ DueRight goes beyond traditional passive reminders (which are easily ignored and
    Modify `.env`:
    ```env
    GEMINI_API_KEY=your_actual_gemini_api_key_here
+   GEMINI_MODEL=gemini-2.5-flash
    DATABASE_URL=sqlite:///./duedright.db
    
    # Optional: Firebase production authentication setup
