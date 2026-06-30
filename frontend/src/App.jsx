@@ -300,14 +300,14 @@ export default function App() {
 
   return (
     <div className="max-w-[720px] mx-auto px-6 pt-12 pb-20 max-sm:px-3 max-sm:pt-6 max-sm:pb-16">
-      <header className="mb-8 flex justify-between items-center gap-4">
-        <div>
+      <header className="mb-8 flex justify-between items-start gap-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold tracking-tight mb-1">DueRight</h1>
-          <p className="text-[15px] text-[#6b6b70]">The next step, ready before it&rsquo;s due.</p>
+          <p className="text-[13.5px] sm:text-[15px] text-[#6b6b70] leading-snug">The next step, ready before it&rsquo;s due.</p>
         </div>
         {user && (
-          <div className="flex items-center gap-4">
-            <div className="group relative flex items-center gap-2 cursor-pointer py-1.5 px-3 rounded-full bg-white border border-[#e6e4df] hover:border-[#6b6b70] hover:bg-[#fafafa] transition-all duration-200 max-w-[150px] whitespace-nowrap">
+          <div className="flex items-center gap-2.5 sm:gap-4 mt-0.5 flex-shrink-0">
+            <div className="group relative flex items-center gap-1.5 sm:gap-2 cursor-pointer py-1.5 px-2.5 sm:px-3 rounded-full bg-white border border-[#e6e4df] hover:border-[#6b6b70] hover:bg-[#fafafa] transition-all duration-200 max-w-[110px] sm:max-w-[150px] whitespace-nowrap">
               {user.photoURL ? (
                 <img src={user.photoURL} alt="Profile" className="w-6 h-6 rounded-full object-cover border border-[#e6e4df]" referrerPolicy="no-referrer" />
               ) : (
@@ -354,8 +354,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className={`flex items-center gap-3 mb-6 p-4 rounded-[10px] border border-[#d98a33]/15 bg-[#fcf1e2] text-sm text-[#1c1b1f] leading-snug ${activeCount === 0 ? '!bg-[#e9f0f7] !border-[#3b6fa0]/15' : ''}`}>
-            <span className="text-lg flex items-center">
+          <div className={`flex items-center gap-2 sm:gap-3 mb-6 p-3 sm:p-4 rounded-[10px] border border-[#d98a33]/15 bg-[#fcf1e2] text-[12.5px] sm:text-sm text-[#1c1b1f] leading-snug ${activeCount === 0 ? '!bg-[#e9f0f7] !border-[#3b6fa0]/15' : ''}`}>
+            <span className="text-base sm:text-lg flex items-center flex-shrink-0">
               {activeCount === 0 ? (
                 <i className="ri-party-line text-[#3b6fa0]"></i>
               ) : criticalCount > 0 ? (
@@ -364,7 +364,7 @@ export default function App() {
                 <i className="ri-focus-3-line text-[#d98a33]"></i>
               )}
             </span>
-            <p className="m-0 text-sm font-medium text-[#1c1b1f] leading-snug">{greetingMsg}</p>
+            <p className="m-0 font-medium text-[#1c1b1f] leading-snug whitespace-nowrap overflow-hidden text-ellipsis">{greetingMsg}</p>
           </div>
         </>
       )}

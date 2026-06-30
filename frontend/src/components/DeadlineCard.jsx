@@ -116,15 +116,15 @@ export default function DeadlineCard({ deadline, onChanged, showToast }) {
   }
 
   return (
-    <article className={`flex gap-5 bg-white border rounded-[14px] p-5 shadow-[0_4px_16px_rgba(0,0,0,0.02),0_1px_2px_rgba(0,0,0,0.01)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.01)] ${cardBorderColors[deadline.urgency] || 'border-[#e6e4df]'}`}>
-      <div className={`flex flex-col items-center justify-center min-w-[68px] py-3 px-1.5 rounded-[10px] font-mono self-start mt-0.5 max-sm:min-w-[52px] max-sm:py-2 max-sm:px-0.5 ${countdownStyles[deadline.urgency]}`}>
-        <span className="font-sans font-bold text-2xl leading-none tracking-tight max-sm:text-xl">{overdue ? Math.abs(days) : days}</span>
-        <span className="text-[9px] uppercase tracking-wider font-semibold mt-1 text-center opacity-80 leading-none">
+    <article className={`flex gap-3.5 sm:gap-5 bg-white border rounded-[14px] p-4 sm:p-5 shadow-[0_4px_16px_rgba(0,0,0,0.02),0_1px_2px_rgba(0,0,0,0.01)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.01)] ${cardBorderColors[deadline.urgency] || 'border-[#e6e4df]'}`}>
+      <div className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[68px] py-2 sm:py-3 px-1 sm:px-1.5 rounded-[10px] font-mono self-start mt-0.5 ${countdownStyles[deadline.urgency]}`}>
+        <span className="font-sans font-bold text-xl sm:text-2xl leading-none tracking-tight">{overdue ? Math.abs(days) : days}</span>
+        <span className="text-[8px] sm:text-[9px] uppercase tracking-wider font-semibold mt-1 text-center opacity-80 leading-none">
           {overdue ? 'days over' : days === 1 ? 'day' : 'days'}
         </span>
         {deadline.recurrence && deadline.recurrence !== 'none' && (
-          <span className="text-[8px] text-[#6b6b70] mt-1 flex items-center gap-0.5 leading-none">
-            <i className="ri-refresh-line text-[10px]"></i>
+          <span className="text-[7.5px] sm:text-[8px] text-[#6b6b70] mt-1 flex items-center gap-0.5 leading-none">
+            <i className="ri-refresh-line text-[9px] sm:text-[10px]"></i>
             {deadline.recurrence}
           </span>
         )}
@@ -139,7 +139,7 @@ export default function DeadlineCard({ deadline, onChanged, showToast }) {
               className="border-none bg-none text-[#1c1b1f] text-xs font-semibold cursor-pointer p-0 hover:text-[#6b6b70]"
               onClick={handleExportICS} 
               title="Export to Calendar (.ics)" 
-              style={{ textDecoration: 'none', fontSize: '14px', padding: '2px 4px', display: 'flex', alignItems: 'center' }}
+              style={{ textDecoration: 'none', fontSize: '14px', padding: '2px 4px', display: 'flex', items: 'center' }}
             >
               <i className="ri-calendar-event-line"></i>
             </button>
@@ -176,27 +176,29 @@ export default function DeadlineCard({ deadline, onChanged, showToast }) {
         )}
 
         {deadline.status !== 'resolved' && (
-          <div className="flex gap-2 mt-3">
+          <div className="flex gap-2 mt-3.5 w-full">
             <button 
               type="button" 
-              className="py-2 px-4 rounded-lg text-[13px] font-semibold cursor-pointer border border-[#e6e4df] bg-[#1c1b1f] text-white hover:bg-[#2c2b30] hover:border-[#2c2b30] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed max-sm:flex-1 max-sm:text-xs max-sm:px-2 inline-flex items-center justify-center gap-1.5"
+              className="flex-1 py-1.5 px-2 sm:py-2 sm:px-4 rounded-lg text-[12px] sm:text-[13px] font-semibold cursor-pointer border border-[#e6e4df] bg-[#1c1b1f] text-white hover:bg-[#2c2b30] hover:border-[#2c2b30] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap"
               onClick={handleDraft} 
               disabled={drafting}
             >
-              <i className="ri-sparkling-2-line mr-1 align-middle"></i>
-              {drafting
-                ? 'Drafting…'
-                : deadline.drafted_action
-                ? 'Redraft action'
-                : 'Draft action'}
+              <i className="ri-sparkling-2-line align-middle"></i>
+              <span className="truncate">
+                {drafting
+                  ? 'Drafting…'
+                  : deadline.drafted_action
+                  ? 'Redraft'
+                  : 'Draft action'}
+              </span>
             </button>
             <button 
               type="button" 
-              className="py-2 px-4 rounded-lg text-[13px] font-semibold cursor-pointer border border-[#e6e4df] bg-white text-[#1c1b1f] transition-all duration-200 hover:bg-[#f7f6f3] disabled:opacity-40 disabled:cursor-not-allowed max-sm:flex-1 max-sm:text-xs max-sm:px-2 inline-flex items-center justify-center gap-1.5"
+              className="flex-1 py-1.5 px-2 sm:py-2 sm:px-4 rounded-lg text-[12px] sm:text-[13px] font-semibold cursor-pointer border border-[#e6e4df] bg-white text-[#1c1b1f] transition-all duration-200 hover:bg-[#f7f6f3] disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap"
               onClick={handleResolve}
             >
-              <i className="ri-checkbox-circle-line mr-1 align-middle"></i>
-              Mark resolved
+              <i className="ri-checkbox-circle-line align-middle"></i>
+              <span className="truncate">Mark resolved</span>
             </button>
           </div>
         )}

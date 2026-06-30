@@ -68,11 +68,11 @@ export default function AddDeadline({ onAdded, showToast }) {
   }
 
   return (
-    <div className="mb-8 bg-white border border-[#e6e4df] rounded-[10px] p-5 shadow-[0_4px_16px_rgba(0,0,0,0.02)]">
-      <div className="flex gap-2 mb-4 border-b border-[#e6e4df] pb-3">
+    <div className="mb-8 bg-white border border-[#e6e4df] rounded-[10px] p-4 sm:p-5 shadow-[0_4px_16px_rgba(0,0,0,0.02)]">
+      <div className="flex gap-1.5 sm:gap-2 mb-4 border-b border-[#e6e4df] pb-3">
         <button
           type="button"
-          className={`bg-none border-none py-1.5 px-3 text-[13.5px] font-semibold text-[#6b6b70] cursor-pointer rounded-md transition-all duration-200 hover:bg-[#f7f6f3] hover:text-[#1c1b1f] ${
+          className={`bg-none border-none py-1.5 px-2.5 sm:px-3 text-[13px] sm:text-[13.5px] font-semibold text-[#6b6b70] cursor-pointer rounded-md transition-all duration-200 hover:bg-[#f7f6f3] hover:text-[#1c1b1f] ${
             mode === 'ai' ? '!bg-[#1c1b1f] !text-white' : ''
           }`}
           onClick={() => setMode('ai')}
@@ -82,7 +82,7 @@ export default function AddDeadline({ onAdded, showToast }) {
         </button>
         <button
           type="button"
-          className={`bg-none border-none py-1.5 px-3 text-[13.5px] font-semibold text-[#6b6b70] cursor-pointer rounded-md transition-all duration-200 hover:bg-[#f7f6f3] hover:text-[#1c1b1f] ${
+          className={`bg-none border-none py-1.5 px-2.5 sm:px-3 text-[13px] sm:text-[13.5px] font-semibold text-[#6b6b70] cursor-pointer rounded-md transition-all duration-200 hover:bg-[#f7f6f3] hover:text-[#1c1b1f] ${
             mode === 'manual' ? '!bg-[#1c1b1f] !text-white' : ''
           }`}
           onClick={() => setMode('manual')}
@@ -93,23 +93,25 @@ export default function AddDeadline({ onAdded, showToast }) {
       </div>
 
       {mode === 'ai' ? (
-        <form className="relative flex gap-2 w-full pb-5" onSubmit={handleAiSubmit}>
-          <input
-            type="text"
-            className="flex-1 h-12 bg-white border border-[#e6e4df] rounded-lg px-4 text-sm font-medium placeholder-[#9a9a95] focus:outline-none focus:border-[#6b6b70] transition-colors disabled:bg-[#faf9f6]"
-            placeholder='e.g. "phone bill due July 5"'
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            disabled={aiSubmitting}
-          />
-          <button
-            type="submit"
-            className="h-12 bg-[#1c1b1f] text-white border-none py-2 px-6 rounded-lg text-sm font-semibold hover:bg-[#2c2b30] cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            disabled={aiSubmitting || !text.trim()}
-          >
-            {aiSubmitting ? 'Adding…' : 'Add'}
-          </button>
-          {aiError && <p className="absolute bottom-[-4px] left-0 text-xs font-semibold text-[#c8442e]">{aiError}</p>}
+        <form className="flex flex-col gap-2 w-full" onSubmit={handleAiSubmit}>
+          <div className="flex gap-2 w-full">
+            <input
+              type="text"
+              className="flex-1 h-11 sm:h-12 bg-white border border-[#e6e4df] rounded-lg px-3.5 sm:px-4 text-sm font-medium placeholder-[#9a9a95] focus:outline-none focus:border-[#6b6b70] transition-colors disabled:bg-[#faf9f6]"
+              placeholder='e.g. "phone bill due July 5"'
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              disabled={aiSubmitting}
+            />
+            <button
+              type="submit"
+              className="h-11 sm:h-12 bg-[#1c1b1f] text-white border-none py-2 px-5 sm:px-6 rounded-lg text-sm font-semibold hover:bg-[#2c2b30] cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+              disabled={aiSubmitting || !text.trim()}
+            >
+              {aiSubmitting ? 'Adding…' : 'Add'}
+            </button>
+          </div>
+          {aiError && <p className="text-xs font-semibold text-[#c8442e] mt-1 text-left">{aiError}</p>}
         </form>
       ) : (
         <form className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5 mt-2" onSubmit={handleManualSubmit}>
