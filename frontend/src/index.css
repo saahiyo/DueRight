@@ -416,15 +416,21 @@ body {
 }
 
 .card-actions button {
-  padding: 8px 16px;
+  padding: 8px 10px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--ink);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex: 1;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .card-actions button:hover:not(:disabled) {
@@ -456,36 +462,17 @@ body {
 
 @media (max-width: 600px) {
   .page {
-    padding: 24px 16px 60px;
-  }
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  .user-profile-badge {
-    width: 100%;
-    justify-content: space-between;
+    padding: 24px 12px 60px;
   }
   .countdown {
-    min-width: 58px;
-    padding: 10px 4px;
+    min-width: 52px;
+    padding: 8px 2px;
   }
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   .manual-form {
     grid-template-columns: 1fr;
-  }
-  .card-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .card-actions button {
-    width: 100%;
-    justify-content: center;
-    display: inline-flex;
-    align-items: center;
   }
 }
 
@@ -791,6 +778,8 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   transition: all 0.2s ease;
+  white-space: nowrap;
+  max-width: 150px;
 }
 
 .user-profile-badge:hover {
@@ -823,6 +812,9 @@ body {
   font-size: 13.5px;
   font-weight: 600;
   color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Tooltip styling */

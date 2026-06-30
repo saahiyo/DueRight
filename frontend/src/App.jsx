@@ -275,7 +275,7 @@ export default function App() {
               type="button" 
               onClick={handleLogout} 
               className="link-btn text-link" 
-              style={{ fontSize: '13.5px', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}
+              style={{ fontSize: '13.5px', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', whiteSpace: 'nowrap' }}
             >
               <i className="ri-logout-box-r-line"></i> Log out
             </button>
