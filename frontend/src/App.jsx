@@ -19,7 +19,7 @@ export default function App() {
     return () => clearTimeout(timeoutId)
   }, [])
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (isFormSubmit = false) => {
     try {
       setError(null)
       const data = await api.list()
@@ -28,6 +28,9 @@ export default function App() {
     } catch (e) {
       if (e.message === 'UNAUTHORIZED') {
         setAuthorized(false)
+        if (isFormSubmit) {
+          setError('Incorrect access key. Please try again.')
+        }
       } else {
         setError(e.message)
       }
@@ -45,7 +48,7 @@ export default function App() {
     if (!passcode.trim()) return
     setApiKey(passcode.trim())
     setLoading(true)
-    refresh()
+    refresh(true)
   }
 
   const active = deadlines.filter((d) => d.status !== 'resolved')
@@ -68,7 +71,7 @@ export default function App() {
   if (!authorized) {
     return (
       <div className="page lock-page">
-        <div className="lock-card">
+        <div className={`lock-card ${error ? 'shake' : ''}`}>
           <div className="lock-header">
             <span className="lock-icon" style={{ display: 'inline-flex', justifyContent: 'center', alignItems: 'center' }}>
               <i className="ri-lock-2-line" style={{ fontSize: '32px', color: 'var(--ink-soft)' }}></i>

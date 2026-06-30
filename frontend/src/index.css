@@ -681,3 +681,14 @@ body {
     opacity: 0;
   }
 }
+
+/* Shake Animation */
+.shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%, 45%, 75% { transform: translateX(-6px); }
+  30%, 60% { transform: translateX(6px); }
+}
