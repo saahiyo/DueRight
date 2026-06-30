@@ -93,60 +93,82 @@ export default function DeadlineCard({ deadline, onChanged, showToast }) {
     deadline.drafted_action || ''
   )}`
 
+  // Urgency dynamic style map
+  const cardBorderColors = {
+    critical: 'border-[#c8442e]/18',
+    high: 'border-[#d98a33]/18',
+    medium: 'border-[#3b6fa0]/18',
+    low: 'border-[#9a9a95]/18',
+  }
+
+  const countdownStyles = {
+    critical: 'bg-[#fdf4f2] text-[#c8442e] border border-[#c8442e]/12',
+    high: 'bg-[#fdf8f2] text-[#d98a33] border border-[#d98a33]/12',
+    medium: 'bg-[#f0f5fa] text-[#3b6fa0] border border-[#3b6fa0]/12',
+    low: 'bg-[#f6f6f5] text-[#9a9a95] border border-[#9a9a95]/12',
+  }
+
+  const badgeStyles = {
+    critical: 'bg-[#fbeae6] text-[#c8442e]',
+    high: 'bg-[#fcf1e2] text-[#d98a33]',
+    medium: 'bg-[#e9f0f7] text-[#3b6fa0]',
+    low: 'bg-[#f1f1ef] text-[#9a9a95]',
+  }
+
   return (
-    <article className={`card urgency-${deadline.urgency}`}>
-      <div className="countdown">
-        <span className="count">{overdue ? Math.abs(days) : days}</span>
-        <span className="unit">
+    <article className={`flex gap-5 bg-white border rounded-[14px] p-5 shadow-[0_4px_16px_rgba(0,0,0,0.02),0_1px_2px_rgba(0,0,0,0.01)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.01)] ${cardBorderColors[deadline.urgency] || 'border-[#e6e4df]'}`}>
+      <div className={`flex flex-col items-center justify-center min-w-[68px] py-3 px-1.5 rounded-[10px] font-mono self-start mt-0.5 max-sm:min-w-[52px] max-sm:py-2 max-sm:px-0.5 ${countdownStyles[deadline.urgency]}`}>
+        <span className="font-sans font-bold text-2xl leading-none tracking-tight max-sm:text-xl">{overdue ? Math.abs(days) : days}</span>
+        <span className="text-[9px] uppercase tracking-wider font-semibold mt-1 text-center opacity-80 leading-none">
           {overdue ? 'days over' : days === 1 ? 'day' : 'days'}
         </span>
         {deadline.recurrence && deadline.recurrence !== 'none' && (
-          <span className="unit" style={{ fontSize: '8px', color: 'var(--ink-soft)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '2px' }}>
-            <i className="ri-refresh-line" style={{ fontSize: '10px' }}></i>
+          <span className="text-[8px] text-[#6b6b70] mt-1 flex items-center gap-0.5 leading-none">
+            <i className="ri-refresh-line text-[10px]"></i>
             {deadline.recurrence}
           </span>
         )}
       </div>
 
-      <div className="card-body">
-        <div className="card-top">
-          <h3>{deadline.title}</h3>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-base font-semibold m-0 text-[#1c1b1f]">{deadline.title}</h3>
+          <div className="flex gap-2 items-center">
             <button 
               type="button" 
-              className="link-btn" 
+              className="border-none bg-none text-[#1c1b1f] text-xs font-semibold cursor-pointer p-0 hover:text-[#6b6b70]"
               onClick={handleExportICS} 
               title="Export to Calendar (.ics)" 
               style={{ textDecoration: 'none', fontSize: '14px', padding: '2px 4px', display: 'flex', alignItems: 'center' }}
             >
               <i className="ri-calendar-event-line"></i>
             </button>
-            <span className={`badge badge-${deadline.urgency}`}>
+            <span className={`text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full whitespace-nowrap ${badgeStyles[deadline.urgency]}`}>
               {URGENCY_LABEL[deadline.urgency]}
             </span>
           </div>
         </div>
 
         {deadline.consequence && (
-          <p className="consequence">{deadline.consequence}</p>
+          <p className="text-[13px] text-[#6b6b70] mt-1.5 mb-0">{deadline.consequence}</p>
         )}
 
         {deadline.drafted_action && (
-          <div className="draft-box">
-            <p>{deadline.drafted_action}</p>
-            <div className="draft-actions">
-              <button type="button" className="link-btn" onClick={handleCopy}>
+          <div className="mt-3 p-3 bg-[#f7f6f3] rounded-lg text-[13.5px] leading-relaxed">
+            <p className="m-0 mb-2 whitespace-pre-wrap">{deadline.drafted_action}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button type="button" className="border-none bg-none text-[#1c1b1f] text-xs font-semibold underline cursor-pointer p-0 hover:text-[#6b6b70]" onClick={handleCopy}>
                 <i className={copied ? "ri-checkbox-circle-fill" : "ri-file-copy-line"} style={{ marginRight: '4px', verticalAlign: 'middle' }}></i>
                 {copied ? 'Copied' : 'Copy'}
               </button>
-              <span className="divider">•</span>
-              <a href={mailtoUrl} className="link-btn text-link" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <i className="ri-mail-send-line" style={{ marginRight: '4px' }}></i>
+              <span className="text-[#e6e4df] text-xs">•</span>
+              <a href={mailtoUrl} className="border-none bg-none text-[#1c1b1f] text-xs font-semibold underline cursor-pointer p-0 hover:text-[#6b6b70] inline-flex items-center" target="_blank" rel="noopener noreferrer">
+                <i className="ri-mail-send-line mr-1"></i>
                 Email
               </a>
-              <span className="divider">•</span>
-              <a href={whatsappUrl} className="link-btn text-link" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <i className="ri-whatsapp-line" style={{ marginRight: '4px' }}></i>
+              <span className="text-[#e6e4df] text-xs">•</span>
+              <a href={whatsappUrl} className="border-none bg-none text-[#1c1b1f] text-xs font-semibold underline cursor-pointer p-0 hover:text-[#6b6b70] inline-flex items-center" target="_blank" rel="noopener noreferrer">
+                <i className="ri-whatsapp-line mr-1"></i>
                 WhatsApp
               </a>
             </div>
@@ -154,17 +176,26 @@ export default function DeadlineCard({ deadline, onChanged, showToast }) {
         )}
 
         {deadline.status !== 'resolved' && (
-          <div className="card-actions">
-            <button type="button" onClick={handleDraft} disabled={drafting}>
-              <i className="ri-sparkling-2-line" style={{ marginRight: '6px', verticalAlign: 'middle' }}></i>
+          <div className="flex gap-2 mt-3">
+            <button 
+              type="button" 
+              className="py-2 px-4 rounded-lg text-[13px] font-semibold cursor-pointer border border-[#e6e4df] bg-[#1c1b1f] text-white hover:bg-[#2c2b30] hover:border-[#2c2b30] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed max-sm:flex-1 max-sm:text-xs max-sm:px-2 inline-flex items-center justify-center gap-1.5"
+              onClick={handleDraft} 
+              disabled={drafting}
+            >
+              <i className="ri-sparkling-2-line mr-1 align-middle"></i>
               {drafting
                 ? 'Drafting…'
                 : deadline.drafted_action
                 ? 'Redraft action'
                 : 'Draft action'}
             </button>
-            <button type="button" className="ghost-btn" onClick={handleResolve}>
-              <i className="ri-checkbox-circle-line" style={{ marginRight: '6px', verticalAlign: 'middle' }}></i>
+            <button 
+              type="button" 
+              className="py-2 px-4 rounded-lg text-[13px] font-semibold cursor-pointer border border-[#e6e4df] bg-white text-[#1c1b1f] transition-all duration-200 hover:bg-[#f7f6f3] disabled:opacity-40 disabled:cursor-not-allowed max-sm:flex-1 max-sm:text-xs max-sm:px-2 inline-flex items-center justify-center gap-1.5"
+              onClick={handleResolve}
+            >
+              <i className="ri-checkbox-circle-line mr-1 align-middle"></i>
               Mark resolved
             </button>
           </div>
