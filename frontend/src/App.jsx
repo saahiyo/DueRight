@@ -209,19 +209,19 @@ export default function App() {
             </button>
           </form>
 
-          <div style={{ display: 'flex', alignItems: 'center', margin: '16px 0 12px', gap: '8px' }}>
-            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
-            <span style={{ fontSize: '11px', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>or</span>
-            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+          <div className="flex items-center my-4 gap-2">
+            <div className="flex-1 h-[1px] bg-[#e6e4df]"></div>
+            <span className="text-[11px] text-[#6b6b70] uppercase tracking-[0.5px]">or</span>
+            <div className="flex-1 h-[1px] bg-[#e6e4df]"></div>
           </div>
 
           <button 
             type="button" 
-            className="google-btn" 
+            className="w-full flex items-center justify-center py-3 border border-[#e6e4df] bg-white text-[#1c1b1f] rounded-[10px] text-[15px] font-semibold hover:bg-[#fcfcfc] hover:border-[#d1d1d6] cursor-pointer transition-all duration-200"
             onClick={handleGoogleSignIn} 
             disabled={authLoading}
           >
-            <i className="ri-google-fill" style={{ color: '#db4437', marginRight: '6px' }}></i>
+            <i className="ri-google-fill text-[#db4437] mr-1.5"></i>
             Sign in with Google
           </button>
           {authError && <p className="field-error" style={{ position: 'static', marginTop: '12px', textAlign: 'center' }}>{authError}</p>}
@@ -255,27 +255,26 @@ export default function App() {
           <p className="tagline">The next step, ready before it&rsquo;s due.</p>
         </div>
         {user && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div className="user-profile-badge">
+          <div className="flex items-center gap-4">
+            <div className="group relative flex items-center gap-2 cursor-pointer py-1.5 px-3 rounded-full bg-white border border-[#e6e4df] hover:border-[#6b6b70] hover:bg-[#fafafa] transition-all duration-200 max-w-[150px] whitespace-nowrap">
               {user.photoURL ? (
-                <img src={user.photoURL} alt="Profile" className="user-avatar" referrerPolicy="no-referrer" />
+                <img src={user.photoURL} alt="Profile" className="w-6 h-6 rounded-full object-cover border border-[#e6e4df]" referrerPolicy="no-referrer" />
               ) : (
-                <div className="user-avatar-placeholder">
+                <div className="w-6 h-6 rounded-full bg-[#1c1b1f] text-white flex items-center justify-center text-[11px] font-bold">
                   {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
                 </div>
               )}
-              <span className="user-name">
+              <span className="text-[13.5px] font-semibold text-[#1c1b1f] truncate whitespace-nowrap">
                 {user.displayName || user.email.split('@')[0]}
               </span>
-              <div className="user-email-tooltip">
+              <div className="absolute bottom-[-36px] right-1/2 translate-x-1/2 -translate-y-1 bg-[#1c1b1f] text-white py-1.5 px-2.5 rounded-md text-[11px] font-medium whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 shadow-[0_4px_12px_rgba(0,0,0,0.08)] pointer-events-none z-[100]">
                 {user.email}
               </div>
             </div>
             <button 
               type="button" 
               onClick={handleLogout} 
-              className="link-btn text-link" 
-              style={{ fontSize: '13.5px', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', whiteSpace: 'nowrap' }}
+              className="text-[13.5px] inline-flex items-center gap-1 text-[#1c1b1f] hover:text-[#6b6b70] font-semibold whitespace-nowrap cursor-pointer transition-all duration-200"
             >
               <i className="ri-logout-box-r-line"></i> Log out
             </button>
