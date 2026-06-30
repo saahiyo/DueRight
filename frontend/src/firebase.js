@@ -2,17 +2,18 @@ import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "mock-api-key",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "mock-project.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "mock-project",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "mock-project.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "1234567890",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:1234567890:web:12345abcde"
+  apiKey: "AIzaSyAyZVZgd0hcCmkGPP0O5h_fHrf1rTsdwp8",
+  authDomain: "dueright.firebaseapp.com",
+  projectId: "dueright",
+  storageBucket: "dueright.firebasestorage.app",
+  messagingSenderId: "721415917114",
+  appId: "1:721415917114:web:f26d6d0e0d8d5f59fa6f03",
+  measurementId: "G-PM51R8XDZH"
 }
 
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 
 export const isFirebaseAuthEnabled = () => {
-  return !!import.meta.env.VITE_FIREBASE_API_KEY
+  return true
 }

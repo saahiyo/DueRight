@@ -729,3 +729,25 @@ body {
   background: none !important;
   transform: translateY(-50%) !important;
 }
+
+/* Google Sign-In Button */
+.google-btn {
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  padding: 12px !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.google-btn:hover {
+  background: #fcfcfc !important;
+  border-color: #d1d1d6 !important;
+}

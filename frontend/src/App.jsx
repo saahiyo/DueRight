@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { api } from './api'
 import AddDeadline from './components/AddDeadline'
 import DeadlineList from './components/DeadlineList'
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth'
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
 import { auth, isFirebaseAuthEnabled } from './firebase'
 
 export default function App() {
@@ -105,6 +105,27 @@ export default function App() {
     }
   }
 
+  async function handleGoogleSignIn() {
+    setAuthLoading(true)
+    setAuthError(null)
+    try {
+      if (!isFirebaseAuthEnabled()) {
+        setUser({ email: 'google-user@dueright.com', uid: 'local-google-user' })
+        setAuthorized(true)
+        refresh()
+        showToast('Signed in with Google (Mock Auth).')
+      } else {
+        const provider = new GoogleAuthProvider()
+        await signInWithPopup(auth, provider)
+        showToast('Signed in with Google successfully!')
+      }
+    } catch (err) {
+      setAuthError(err.message)
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
   async function handleLogout() {
     if (!isFirebaseAuthEnabled()) {
       setUser(null)
@@ -187,6 +208,22 @@ export default function App() {
               {authLoading ? 'Connecting...' : authMode === 'login' ? 'Sign In' : 'Sign Up'}
             </button>
           </form>
+
+          <div style={{ display: 'flex', alignItems: 'center', margin: '16px 0 12px', gap: '8px' }}>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+            <span style={{ fontSize: '11px', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>or</span>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+          </div>
+
+          <button 
+            type="button" 
+            className="google-btn" 
+            onClick={handleGoogleSignIn} 
+            disabled={authLoading}
+          >
+            <i className="ri-google-fill" style={{ color: '#db4437', marginRight: '6px' }}></i>
+            Sign in with Google
+          </button>
           {authError && <p className="field-error" style={{ position: 'static', marginTop: '12px', textAlign: 'center' }}>{authError}</p>}
           <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--ink-soft)' }}>
             {authMode === 'login' ? (
