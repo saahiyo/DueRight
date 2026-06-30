@@ -54,6 +54,8 @@ export default function App() {
       setUser({ email: 'local-dev@dueright.com', uid: 'local-user-123' })
       setAuthorized(true)
       setLoading(false)
+      document.cookie = "auth_token=mock-token-123; path=/; max-age=3600; SameSite=Lax"
+      document.cookie = "is_authenticated=true; path=/; max-age=3600; SameSite=Lax"
       return
     }
 
@@ -61,10 +63,19 @@ export default function App() {
       if (firebaseUser) {
         setUser(firebaseUser)
         setAuthorized(true)
+        try {
+          const token = await firebaseUser.getIdToken()
+          document.cookie = `auth_token=${token}; path=/; max-age=3600; SameSite=Lax`
+          document.cookie = `is_authenticated=true; path=/; max-age=3600; SameSite=Lax`
+        } catch (e) {
+          console.error("Failed to write auth cookie:", e)
+        }
       } else {
         setUser(null)
         setAuthorized(false)
         setLoading(false)
+        document.cookie = "auth_token=; path=/; max-age=0; SameSite=Lax"
+        document.cookie = "is_authenticated=; path=/; max-age=0; SameSite=Lax"
       }
     })
     return () => unsubscribe()
@@ -88,6 +99,8 @@ export default function App() {
         // Mock Auth Bypass
         setUser({ email, uid: 'local-user-123' })
         setAuthorized(true)
+        document.cookie = "auth_token=mock-token-123; path=/; max-age=3600; SameSite=Lax"
+        document.cookie = "is_authenticated=true; path=/; max-age=3600; SameSite=Lax"
         showToast('Logged in successfully (Mock Auth).')
       } else {
         if (authMode === 'login') {
@@ -137,6 +150,8 @@ export default function App() {
   }
 
   async function handleLogout() {
+    document.cookie = "auth_token=; path=/; max-age=0; SameSite=Lax"
+    document.cookie = "is_authenticated=; path=/; max-age=0; SameSite=Lax"
     if (!isFirebaseAuthEnabled()) {
       setUser(null)
       setAuthorized(false)
