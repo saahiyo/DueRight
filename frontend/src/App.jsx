@@ -69,6 +69,17 @@ export default function App() {
     }
   }
 
+  if (loading && deadlines.length === 0 && authorized) {
+    return (
+      <div className="page lock-page">
+        <div className="lock-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+          <i className="ri-loader-4-line ri-spin" style={{ fontSize: '36px', color: 'var(--ink)' }}></i>
+          <p style={{ marginTop: '16px', fontSize: '14.5px', color: 'var(--ink-soft)', fontWeight: 500 }}>Connecting to DueRight...</p>
+        </div>
+      </div>
+    )
+  }
+
   if (!authorized) {
     return (
       <div className="page lock-page">
