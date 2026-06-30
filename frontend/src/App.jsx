@@ -12,6 +12,7 @@ export default function App() {
   
   // Auth state
   const [authorized, setAuthorized] = useState(false)
+  const [authChecking, setAuthChecking] = useState(true)
   const [user, setUser] = useState(null)
   const [authMode, setAuthMode] = useState('login') // 'login' or 'register'
   const [email, setEmail] = useState('')
@@ -54,6 +55,7 @@ export default function App() {
       setUser({ email: 'local-dev@dueright.com', uid: 'local-user-123' })
       setAuthorized(true)
       setLoading(false)
+      setAuthChecking(false)
       document.cookie = "auth_token=mock-token-123; path=/; max-age=3600; SameSite=Lax"
       document.cookie = "is_authenticated=true; path=/; max-age=3600; SameSite=Lax"
       return
@@ -77,6 +79,7 @@ export default function App() {
         document.cookie = "auth_token=; path=/; max-age=0; SameSite=Lax"
         document.cookie = "is_authenticated=; path=/; max-age=0; SameSite=Lax"
       }
+      setAuthChecking(false)
     })
     return () => unsubscribe()
   }, [])
@@ -178,7 +181,7 @@ export default function App() {
     }
   }
 
-  if (loading && deadlines.length === 0 && authorized) {
+  if (authChecking || (loading && deadlines.length === 0 && authorized)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#faf9f6] p-4">
         <div className="w-full max-w-[380px] bg-white border border-[#e6e4df] rounded-2xl flex flex-col items-center justify-center p-10 shadow-[0_12px_32px_rgba(0,0,0,0.04)] text-center">
