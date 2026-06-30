@@ -255,10 +255,22 @@ export default function App() {
           <p className="tagline">The next step, ready before it&rsquo;s due.</p>
         </div>
         {user && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '13.5px', color: 'var(--ink-soft)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <i className="ri-user-line"></i> {user.email}
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div className="user-profile-badge">
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="Profile" className="user-avatar" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="user-avatar-placeholder">
+                  {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
+                </div>
+              )}
+              <span className="user-name">
+                {user.displayName || user.email.split('@')[0]}
+              </span>
+              <div className="user-email-tooltip">
+                {user.email}
+              </div>
+            </div>
             <button 
               type="button" 
               onClick={handleLogout} 
