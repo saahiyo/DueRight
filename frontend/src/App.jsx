@@ -308,7 +308,7 @@ export default function App() {
               onClick={handleLogout} 
               className="text-[13.5px] inline-flex items-center gap-1 text-[#1c1b1f] hover:text-[#6b6b70] font-semibold whitespace-nowrap cursor-pointer transition-all duration-200"
             >
-              <i className="ri-logout-box-r-line"></i> Log out
+              <i className="ri-logout-box-r-line"></i> <span className="hidden md:inline">Log out</span>
             </button>
           </div>
         )}
