@@ -1,6 +1,6 @@
 import DeadlineCard from './DeadlineCard'
 
-export default function DeadlineList({ title, deadlines, emptyText, muted, onChanged }) {
+export default function DeadlineList({ title, deadlines, emptyText, muted, onChanged, showToast }) {
   return (
     <section className={`list-section${muted ? ' muted' : ''}`}>
       <h2>{title}</h2>
@@ -9,7 +9,7 @@ export default function DeadlineList({ title, deadlines, emptyText, muted, onCha
       ) : (
         <div className="card-stack">
           {deadlines.map((d) => (
-            <DeadlineCard key={d.id} deadline={d} onChanged={onChanged} />
+            <DeadlineCard key={d.id} deadline={d} onChanged={onChanged} showToast={showToast} />
           ))}
         </div>
       )}

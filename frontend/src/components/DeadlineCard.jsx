@@ -15,7 +15,7 @@ function daysUntil(dueDateStr) {
   return Math.round((due - today) / (1000 * 60 * 60 * 24))
 }
 
-export default function DeadlineCard({ deadline, onChanged }) {
+export default function DeadlineCard({ deadline, onChanged, showToast }) {
   const [drafting, setDrafting] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -24,9 +24,13 @@ export default function DeadlineCard({ deadline, onChanged }) {
 
   async function handleDraft() {
     setDrafting(true)
+    if (showToast) showToast('AI is generating your action draft...', 'info')
     try {
       await api.draftAction(deadline.id)
       onChanged()
+      if (showToast) showToast('AI action draft generated successfully!')
+    } catch (err) {
+      if (showToast) showToast('Failed to generate action draft.', 'error')
     } finally {
       setDrafting(false)
     }
@@ -35,12 +39,20 @@ export default function DeadlineCard({ deadline, onChanged }) {
   async function handleResolve() {
     await api.updateStatus(deadline.id, 'resolved')
     onChanged()
+    if (showToast) {
+      if (deadline.recurrence && deadline.recurrence !== 'none') {
+        showToast('Deadline resolved! Scheduled next recurring instance.')
+      } else {
+        showToast('Deadline marked as resolved!')
+      }
+    }
   }
 
   async function handleCopy() {
     await navigator.clipboard.writeText(deadline.drafted_action || '')
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
+    if (showToast) showToast('Draft copied to clipboard!')
   }
 
   function handleExportICS() {
@@ -70,6 +82,7 @@ export default function DeadlineCard({ deadline, onChanged }) {
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
+    if (showToast) showToast('Calendar event (.ics) downloaded!')
   }
 
   const mailtoUrl = `mailto:?subject=${encodeURIComponent(
@@ -88,8 +101,9 @@ export default function DeadlineCard({ deadline, onChanged }) {
           {overdue ? 'days over' : days === 1 ? 'day' : 'days'}
         </span>
         {deadline.recurrence && deadline.recurrence !== 'none' && (
-          <span className="unit" style={{ fontSize: '8px', color: 'var(--ink-soft)', marginTop: '4px' }}>
-            🔁 {deadline.recurrence}
+          <span className="unit" style={{ fontSize: '8px', color: 'var(--ink-soft)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+            <i className="ri-refresh-line" style={{ fontSize: '10px' }}></i>
+            {deadline.recurrence}
           </span>
         )}
       </div>
@@ -103,9 +117,9 @@ export default function DeadlineCard({ deadline, onChanged }) {
               className="link-btn" 
               onClick={handleExportICS} 
               title="Export to Calendar (.ics)" 
-              style={{ textDecoration: 'none', fontSize: '13px', padding: '2px 4px' }}
+              style={{ textDecoration: 'none', fontSize: '14px', padding: '2px 4px', display: 'flex', alignItems: 'center' }}
             >
-              📅
+              <i className="ri-calendar-event-line"></i>
             </button>
             <span className={`badge badge-${deadline.urgency}`}>
               {URGENCY_LABEL[deadline.urgency]}
@@ -122,14 +136,17 @@ export default function DeadlineCard({ deadline, onChanged }) {
             <p>{deadline.drafted_action}</p>
             <div className="draft-actions">
               <button type="button" className="link-btn" onClick={handleCopy}>
+                <i className={copied ? "ri-checkbox-circle-fill" : "ri-file-copy-line"} style={{ marginRight: '4px', verticalAlign: 'middle' }}></i>
                 {copied ? 'Copied' : 'Copy'}
               </button>
               <span className="divider">•</span>
-              <a href={mailtoUrl} className="link-btn text-link" target="_blank" rel="noopener noreferrer">
+              <a href={mailtoUrl} className="link-btn text-link" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <i className="ri-mail-send-line" style={{ marginRight: '4px' }}></i>
                 Email
               </a>
               <span className="divider">•</span>
-              <a href={whatsappUrl} className="link-btn text-link" target="_blank" rel="noopener noreferrer">
+              <a href={whatsappUrl} className="link-btn text-link" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <i className="ri-whatsapp-line" style={{ marginRight: '4px' }}></i>
                 WhatsApp
               </a>
             </div>
@@ -139,6 +156,7 @@ export default function DeadlineCard({ deadline, onChanged }) {
         {deadline.status !== 'resolved' && (
           <div className="card-actions">
             <button type="button" onClick={handleDraft} disabled={drafting}>
+              <i className="ri-sparkling-2-line" style={{ marginRight: '6px', verticalAlign: 'middle' }}></i>
               {drafting
                 ? 'Drafting…'
                 : deadline.drafted_action
@@ -146,6 +164,7 @@ export default function DeadlineCard({ deadline, onChanged }) {
                 : 'Draft action'}
             </button>
             <button type="button" className="ghost-btn" onClick={handleResolve}>
+              <i className="ri-checkbox-circle-line" style={{ marginRight: '6px', verticalAlign: 'middle' }}></i>
               Mark resolved
             </button>
           </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { api } from '../api'
 
-export default function AddDeadline({ onAdded }) {
+export default function AddDeadline({ onAdded, showToast }) {
   const [mode, setMode] = useState('ai') // 'ai' or 'manual'
   
   // AI fields
@@ -27,10 +27,12 @@ export default function AddDeadline({ onAdded }) {
       await api.createFromText(text.trim())
       setText('')
       onAdded()
+      if (showToast) showToast('Deadline successfully parsed and added!')
     } catch (err) {
       setAiError(
         'Could not understand that. Try something like "car insurance renews June 30".'
       )
+      if (showToast) showToast('Failed to parse deadline. Please try again.', 'error')
     } finally {
       setAiSubmitting(false)
     }
@@ -56,8 +58,10 @@ export default function AddDeadline({ onAdded }) {
       setConsequence('')
       setRecurrence('none')
       onAdded()
+      if (showToast) showToast('Deadline added successfully!')
     } catch (err) {
       setManualError(err.message || 'Failed to create deadline. Please check fields.')
+      if (showToast) showToast('Failed to create deadline. Please check fields.', 'error')
     } finally {
       setManualSubmitting(false)
     }
@@ -71,14 +75,16 @@ export default function AddDeadline({ onAdded }) {
           className={`tab-btn ${mode === 'ai' ? 'active' : ''}`}
           onClick={() => setMode('ai')}
         >
-          ✨ Quick Add (AI)
+          <i className="ri-sparkling-2-line" style={{ marginRight: '6px', verticalAlign: 'middle' }}></i>
+          Quick Add (AI)
         </button>
         <button
           type="button"
           className={`tab-btn ${mode === 'manual' ? 'active' : ''}`}
           onClick={() => setMode('manual')}
         >
-          📝 Detailed Add
+          <i className="ri-file-list-3-line" style={{ marginRight: '6px', verticalAlign: 'middle' }}></i>
+          Detailed Add
         </button>
       </div>
 

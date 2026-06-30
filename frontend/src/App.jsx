@@ -9,6 +9,15 @@ export default function App() {
   const [error, setError] = useState(null)
   const [authorized, setAuthorized] = useState(true)
   const [passcode, setPasscode] = useState('')
+  const [toast, setToast] = useState(null)
+
+  const showToast = useCallback((message, type = 'success') => {
+    setToast({ message, type })
+    const timeoutId = setTimeout(() => {
+      setToast((prev) => (prev && prev.message === message ? null : prev))
+    }, 3000)
+    return () => clearTimeout(timeoutId)
+  }, [])
 
   const refresh = useCallback(async () => {
     try {
@@ -61,7 +70,9 @@ export default function App() {
       <div className="page lock-page">
         <div className="lock-card">
           <div className="lock-header">
-            <span className="lock-icon">🔒</span>
+            <span className="lock-icon" style={{ display: 'inline-flex', justifyContent: 'center', alignItems: 'center' }}>
+              <i className="ri-lock-2-line" style={{ fontSize: '32px', color: 'var(--ink-soft)' }}></i>
+            </span>
             <h2>DueRight is Locked</h2>
             <p>Enter the access key to view your dashboard.</p>
           </div>
@@ -110,13 +121,21 @@ export default function App() {
           </div>
 
           <div className={`summary-banner ${activeCount === 0 ? 'all-clear' : ''}`}>
-            <span className="banner-icon">{activeCount === 0 ? '🎉' : criticalCount > 0 ? '⚠️' : '🎯'}</span>
+            <span className="banner-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+              {activeCount === 0 ? (
+                <i className="ri-party-line" style={{ color: 'var(--medium)' }}></i>
+              ) : criticalCount > 0 ? (
+                <i className="ri-error-warning-fill" style={{ color: 'var(--critical)' }}></i>
+              ) : (
+                <i className="ri-focus-3-line" style={{ color: 'var(--high)' }}></i>
+              )}
+            </span>
             <p className="banner-text">{greetingMsg}</p>
           </div>
         </>
       )}
 
-      <AddDeadline onAdded={refresh} />
+      <AddDeadline onAdded={refresh} showToast={showToast} />
 
       {error && <div className="error-banner">{error}</div>}
 
@@ -129,6 +148,7 @@ export default function App() {
             deadlines={active}
             emptyText='Nothing pending. Try adding one above, e.g. "car insurance renews June 30".'
             onChanged={refresh}
+            showToast={showToast}
           />
           {resolved.length > 0 && (
             <DeadlineList
@@ -136,9 +156,23 @@ export default function App() {
               deadlines={resolved}
               muted
               onChanged={refresh}
+              showToast={showToast}
             />
           )}
         </>
+      )}
+
+      {toast && (
+        <div className={`toast-notification toast-${toast.type}`}>
+          <i className={
+            toast.type === 'error' 
+              ? 'ri-error-warning-fill' 
+              : toast.type === 'info' 
+              ? 'ri-information-line' 
+              : 'ri-checkbox-circle-fill'
+          }></i>
+          <span>{toast.message}</span>
+        </div>
       )}
     </div>
   )
