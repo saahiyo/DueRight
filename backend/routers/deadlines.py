@@ -8,7 +8,7 @@ from database import get_session
 from models import Deadline, DeadlineStatus, UrgencyLevel, RecurrenceType
 from schemas import DeadlineCreate, DeadlineRead, DeadlineUpdateStatus
 import gemini_service as gemini
-from auth import get_current_user
+from auth import get_current_user, firebase_auth_enabled
 
 router = APIRouter(prefix="/deadlines", tags=["deadlines"])
 
@@ -86,6 +86,27 @@ def create_deadline(
             user_id=uid,
         )
 
+    if firebase_auth_enabled:
+        from firebase_admin import db
+        ref = db.reference(f"deadlines/{uid}")
+        new_ref = ref.push()
+        deadline_id = new_ref.key
+        data_dict = {
+            "id": deadline_id,
+            "title": deadline.title,
+            "raw_input": deadline.raw_input,
+            "type": deadline.type.value if hasattr(deadline.type, 'value') else deadline.type,
+            "due_date": deadline.due_date.isoformat(),
+            "consequence": deadline.consequence,
+            "urgency": deadline.urgency.value if hasattr(deadline.urgency, 'value') else deadline.urgency,
+            "status": deadline.status.value if hasattr(deadline.status, 'value') else deadline.status,
+            "recurrence": deadline.recurrence.value if hasattr(deadline.recurrence, 'value') else deadline.recurrence,
+            "drafted_action": deadline.drafted_action,
+            "user_id": uid,
+        }
+        new_ref.set(data_dict)
+        return data_dict
+
     session.add(deadline)
     session.commit()
     session.refresh(deadline)
@@ -98,6 +119,17 @@ def list_deadlines(
     uid: str = Depends(get_current_user),
 ):
     """List all deadlines, sorted by urgency then due date."""
+    if firebase_auth_enabled:
+        from firebase_admin import db
+        ref = db.reference(f"deadlines/{uid}")
+        data = ref.get() or {}
+        deadlines_list = []
+        for k, v in data.items():
+            v["id"] = k
+            deadlines_list.append(v)
+        deadlines_list.sort(key=lambda d: (URGENCY_ORDER.get(d.get("urgency", "medium"), 4), d.get("due_date", "")))
+        return deadlines_list
+
     deadlines = session.exec(select(Deadline).where(Deadline.user_id == uid)).all()
     deadlines.sort(key=lambda d: (URGENCY_ORDER.get(d.urgency, 4), d.due_date))
     return deadlines
@@ -105,11 +137,25 @@ def list_deadlines(
 
 @router.get("/{deadline_id}", response_model=DeadlineRead)
 def get_deadline(
-    deadline_id: int,
+    deadline_id: str,
     session: Session = Depends(get_session),
     uid: str = Depends(get_current_user),
 ):
-    deadline = session.get(Deadline, deadline_id)
+    if firebase_auth_enabled:
+        from firebase_admin import db
+        ref = db.reference(f"deadlines/{uid}/{deadline_id}")
+        data = ref.get()
+        if not data:
+            raise HTTPException(status_code=404, detail="Deadline not found")
+        data["id"] = deadline_id
+        return data
+
+    try:
+        db_id = int(deadline_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Deadline not found")
+
+    deadline = session.get(Deadline, db_id)
     if not deadline or deadline.user_id != uid:
         raise HTTPException(status_code=404, detail="Deadline not found")
     return deadline
@@ -117,12 +163,57 @@ def get_deadline(
 
 @router.patch("/{deadline_id}/status", response_model=DeadlineRead)
 def update_status(
-    deadline_id: int,
+    deadline_id: str,
     payload: DeadlineUpdateStatus,
     session: Session = Depends(get_session),
     uid: str = Depends(get_current_user),
 ):
-    deadline = session.get(Deadline, deadline_id)
+    if firebase_auth_enabled:
+        from firebase_admin import db
+        ref = db.reference(f"deadlines/{uid}/{deadline_id}")
+        data = ref.get()
+        if not data:
+            raise HTTPException(status_code=404, detail="Deadline not found")
+        
+        old_status = data.get("status", "pending")
+        new_status = payload.status.value if hasattr(payload.status, 'value') else payload.status
+        
+        ref.update({"status": new_status})
+        data["status"] = new_status
+        
+        if new_status == "resolved" and old_status != "resolved":
+            recurrence = data.get("recurrence", "none")
+            if recurrence != "none":
+                due_date_str = data.get("due_date")
+                due_date_val = date.fromisoformat(due_date_str)
+                next_due = calculate_next_due_date(due_date_val, recurrence)
+                
+                list_ref = db.reference(f"deadlines/{uid}")
+                new_ref = list_ref.push()
+                new_id = new_ref.key
+                new_deadline = {
+                    "id": new_id,
+                    "title": data.get("title"),
+                    "raw_input": data.get("raw_input"),
+                    "type": data.get("type"),
+                    "due_date": next_due.isoformat(),
+                    "consequence": data.get("consequence"),
+                    "urgency": data.get("urgency"),
+                    "recurrence": recurrence,
+                    "status": "pending",
+                    "user_id": uid,
+                }
+                new_ref.set(new_deadline)
+        
+        data["id"] = deadline_id
+        return data
+
+    try:
+        db_id = int(deadline_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Deadline not found")
+
+    deadline = session.get(Deadline, db_id)
     if not deadline or deadline.user_id != uid:
         raise HTTPException(status_code=404, detail="Deadline not found")
     
@@ -153,12 +244,41 @@ def update_status(
 
 @router.post("/{deadline_id}/draft-action", response_model=DeadlineRead)
 def generate_draft_action(
-    deadline_id: int,
+    deadline_id: str,
     session: Session = Depends(get_session),
     uid: str = Depends(get_current_user),
 ):
     """The core agentic step: generate a ready-to-send action for this deadline."""
-    deadline = session.get(Deadline, deadline_id)
+    if firebase_auth_enabled:
+        from firebase_admin import db
+        ref = db.reference(f"deadlines/{uid}/{deadline_id}")
+        data = ref.get()
+        if not data:
+            raise HTTPException(status_code=404, detail="Deadline not found")
+        
+        draft = gemini.draft_action(
+            data.get("title", ""),
+            data.get("type", "other"),
+            data.get("due_date", ""),
+            data.get("consequence", ""),
+        )
+        
+        update_dict = {"drafted_action": draft}
+        if data.get("status") == "pending":
+            update_dict["status"] = "actioned"
+            data["status"] = "actioned"
+            
+        ref.update(update_dict)
+        data["drafted_action"] = draft
+        data["id"] = deadline_id
+        return data
+
+    try:
+        db_id = int(deadline_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Deadline not found")
+
+    deadline = session.get(Deadline, db_id)
     if not deadline or deadline.user_id != uid:
         raise HTTPException(status_code=404, detail="Deadline not found")
     draft = gemini.draft_action(
@@ -178,11 +298,24 @@ def generate_draft_action(
 
 @router.delete("/{deadline_id}")
 def delete_deadline(
-    deadline_id: int,
+    deadline_id: str,
     session: Session = Depends(get_session),
     uid: str = Depends(get_current_user),
 ):
-    deadline = session.get(Deadline, deadline_id)
+    if firebase_auth_enabled:
+        from firebase_admin import db
+        ref = db.reference(f"deadlines/{uid}/{deadline_id}")
+        if not ref.get():
+            raise HTTPException(status_code=404, detail="Deadline not found")
+        ref.delete()
+        return {"ok": True}
+
+    try:
+        db_id = int(deadline_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Deadline not found")
+
+    deadline = session.get(Deadline, db_id)
     if not deadline or deadline.user_id != uid:
         raise HTTPException(status_code=404, detail="Deadline not found")
     session.delete(deadline)

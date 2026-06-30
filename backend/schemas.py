@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Optional
+from typing import Optional, Union
 from pydantic import BaseModel
 from models import DeadlineType, UrgencyLevel, DeadlineStatus, RecurrenceType
 
@@ -20,7 +20,7 @@ class DeadlineUpdateStatus(BaseModel):
 
 
 class DeadlineRead(BaseModel):
-    id: int
+    id: Union[int, str]
     title: str
     type: DeadlineType
     due_date: date
