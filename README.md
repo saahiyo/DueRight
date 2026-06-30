@@ -50,7 +50,7 @@ DueRight goes beyond traditional passive reminders (which are easily ignored and
 | **Backend API** | **FastAPI (Python 3.11+)** | High-performance asynchronous endpoint routing. |
 | **Database** | **SQLite + SQLModel** | Relational data persistence with declarative models. |
 | **Frontend** | **React (Vite, Javascript)** | Fast SPA with premium typography and interactive transitions. |
-| **Aesthetics** | **Vanilla CSS** | Modern responsive grid layouts, custom variables, card hovers, and soft shadow transitions. |
+| **Aesthetics** | **Tailwind CSS** | Modern responsive grid layouts, card hovers, and transitions. |
 
 ---
 
