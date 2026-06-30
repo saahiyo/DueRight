@@ -1,6 +1,5 @@
 import os
 import logging
-from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, Security, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security.api_key import APIKeyHeader
@@ -9,18 +8,11 @@ from dotenv import load_dotenv
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
-from database import init_db
 from routers.deadlines import router as deadlines_router
 
 import auth
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    init_db()
-    yield
-
-
-app = FastAPI(title="DueRight API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="DueRight API", version="0.1.0")
 
 frontend_origin = os.getenv("FRONTEND_ORIGIN", "*")
 app.add_middleware(

@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from enum import Enum
 from typing import Optional
-from sqlmodel import SQLModel, Field
+from pydantic import BaseModel, Field
 
 
 class DeadlineType(str, Enum):
@@ -30,8 +30,8 @@ class RecurrenceType(str, Enum):
     yearly = "yearly"
 
 
-class Deadline(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+class Deadline(BaseModel):
+    id: Optional[str] = None
     title: str
     raw_input: Optional[str] = None
     type: DeadlineType = DeadlineType.other
@@ -41,6 +41,6 @@ class Deadline(SQLModel, table=True):
     status: DeadlineStatus = DeadlineStatus.pending
     recurrence: RecurrenceType = RecurrenceType.none
     drafted_action: Optional[str] = None
-    user_id: Optional[str] = Field(default=None, index=True)
+    user_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
