@@ -275,6 +275,28 @@ export default function App() {
             <i className="ri-google-fill text-[#db4437] mr-1.5"></i>
             Sign in with Google
           </button>
+
+          <button 
+            type="button" 
+            className="w-full flex items-center justify-center py-3 mt-2 border border-dashed border-[#d98a33]/40 bg-[#fcf1e2]/30 text-[#d98a33] rounded-[10px] text-[14px] font-semibold hover:bg-[#fcf1e2]/60 hover:border-[#d98a33]/60 cursor-pointer transition-all duration-200"
+            onClick={async () => {
+              setAuthLoading(true)
+              setAuthError(null)
+              try {
+                await signInWithEmailAndPassword(auth, 'demo@dueright.com', 'demo123456')
+                showToast('Signed in as Guest!')
+              } catch (err) {
+                setAuthError('Demo login failed. Please try Google Sign-In.')
+              } finally {
+                setAuthLoading(false)
+              }
+            }} 
+            disabled={authLoading}
+          >
+            <i className="ri-user-star-line mr-1.5"></i>
+            Try as Guest
+          </button>
+
           {authError && <p className="text-xs font-semibold text-[#c8442e] mt-3 text-center">{authError}</p>}
           <div className="mt-4 text-[13px] text-[#6b6b70]">
             {authMode === 'login' ? (
