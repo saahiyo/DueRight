@@ -1,16 +1,26 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const API_KEY = import.meta.env.VITE_API_KEY || ''
+
+export const getApiKey = () => sessionStorage.getItem('API_ACCESS_KEY') || ''
+export const setApiKey = (key) => sessionStorage.setItem('API_ACCESS_KEY', key)
+export const clearApiKey = () => sessionStorage.removeItem('API_ACCESS_KEY')
 
 async function request(path, options = {}) {
   const headers = { 'Content-Type': 'application/json' }
-  if (API_KEY) {
-    headers['X-API-Key'] = API_KEY
+  const key = getApiKey()
+  if (key) {
+    headers['X-API-Key'] = key
   }
   
   const res = await fetch(`${API_URL}${path}`, {
     headers,
     ...options,
   })
+  
+  if (res.status === 401) {
+    clearApiKey()
+    throw new Error('UNAUTHORIZED')
+  }
+  
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
     const detail = Array.isArray(body.detail)

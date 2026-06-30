@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { api } from './api'
+import { api, setApiKey } from './api'
 import AddDeadline from './components/AddDeadline'
 import DeadlineList from './components/DeadlineList'
 
@@ -7,14 +7,21 @@ export default function App() {
   const [deadlines, setDeadlines] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [authorized, setAuthorized] = useState(true)
+  const [passcode, setPasscode] = useState('')
 
   const refresh = useCallback(async () => {
     try {
       setError(null)
       const data = await api.list()
       setDeadlines(data)
+      setAuthorized(true)
     } catch (e) {
-      setError(e.message)
+      if (e.message === 'UNAUTHORIZED') {
+        setAuthorized(false)
+      } else {
+        setError(e.message)
+      }
     } finally {
       setLoading(false)
     }
@@ -23,6 +30,14 @@ export default function App() {
   useEffect(() => {
     refresh()
   }, [refresh])
+
+  function handleUnlock(e) {
+    e.preventDefault()
+    if (!passcode.trim()) return
+    setApiKey(passcode.trim())
+    setLoading(true)
+    refresh()
+  }
 
   const active = deadlines.filter((d) => d.status !== 'resolved')
   const resolved = deadlines.filter((d) => d.status === 'resolved')
@@ -39,6 +54,31 @@ export default function App() {
     } else {
       greetingMsg = `You have ${activeCount} pending deadline${activeCount > 1 ? 's' : ''}. Everything is under control!`
     }
+  }
+
+  if (!authorized) {
+    return (
+      <div className="page lock-page">
+        <div className="lock-card">
+          <div className="lock-header">
+            <span className="lock-icon">🔒</span>
+            <h2>DueRight is Locked</h2>
+            <p>Enter the access key to view your dashboard.</p>
+          </div>
+          <form onSubmit={handleUnlock}>
+            <input
+              type="password"
+              placeholder="Enter Access Key"
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+              required
+            />
+            <button type="submit">Unlock</button>
+          </form>
+          {error && <p className="field-error" style={{ position: 'static', marginTop: '12px', textAlign: 'center' }}>{error}</p>}
+        </div>
+      </div>
+    )
   }
 
   return (
