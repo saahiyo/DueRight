@@ -48,7 +48,7 @@ DueRight goes beyond traditional passive reminders (which are easily ignored and
 | **AI Engine** | **Gemini 2.5 Flash** | Processing inputs, drafting context-aware templates, and structured output parsing. |
 | **Authentication** | **Firebase Auth** | User authentication, session security, and Google Sign-in hooks. |
 | **Backend API** | **FastAPI (Python 3.11+)** | High-performance asynchronous endpoint routing. |
-| **Database** | **SQLite + SQLModel** | Relational data persistence with declarative models. |
+| **Database** | **Firebase Realtime DB** (Prod) / **SQLite + SQLModel** (Dev) | Primary cloud database for production, with local SQLite fallback for dev bypass mode. |
 | **Frontend** | **React (Vite, Javascript)** | Fast SPA with premium typography and interactive transitions. |
 | **Aesthetics** | **Tailwind CSS** | Modern responsive grid layouts, card hovers, and transitions. |
 
