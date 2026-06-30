@@ -109,7 +109,7 @@ export default function App() {
                 <i className={showPasscode ? "ri-eye-off-line" : "ri-eye-line"}></i>
               </button>
             </div>
-            <button type="submit">Unlock</button>
+            <button type="submit" className="lock-submit-btn">Unlock</button>
           </form>
           {error && <p className="field-error" style={{ position: 'static', marginTop: '12px', textAlign: 'center' }}>{error}</p>}
         </div>
