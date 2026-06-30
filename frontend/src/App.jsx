@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { api } from './api'
 import AddDeadline from './components/AddDeadline'
 import DeadlineList from './components/DeadlineList'
+import DeadlineSkeleton from './components/DeadlineSkeleton'
 import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
 import { auth, isFirebaseAuthEnabled } from './firebase'
 
@@ -183,10 +184,28 @@ export default function App() {
 
   if (authChecking || (loading && deadlines.length === 0 && authorized)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#faf9f6] p-4">
-        <div className="w-full max-w-[380px] bg-white border border-[#e6e4df] rounded-2xl flex flex-col items-center justify-center p-10 shadow-[0_12px_32px_rgba(0,0,0,0.04)] text-center">
-          <i className="ri-loader-4-line ri-spin text-4xl text-[#1c1b1f]"></i>
-          <p className="mt-4 text-[14.5px] text-[#6b6b70] font-medium animate-pulse">Connecting to DueRight...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf9f6] p-6 relative overflow-hidden">
+        {/* Subtle decorative background circles */}
+        <div className="absolute top-[-20%] left-[-20%] w-[60%] aspect-square rounded-full bg-[#fdf4f2]/30 filter blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-[-20%] right-[-20%] w-[60%] aspect-square rounded-full bg-[#f0f5fa]/30 filter blur-3xl pointer-events-none"></div>
+        
+        <div className="flex flex-col items-center max-w-[320px] text-center z-10">
+          {/* Logo Mark Animation */}
+          <div className="relative w-16 h-16 mb-6 flex items-center justify-center">
+            {/* Pulsing ring */}
+            <div className="absolute inset-0 rounded-full border border-[#1c1b1f]/10 animate-ping opacity-75"></div>
+            {/* Rotating/spinning gradient outline */}
+            <div className="absolute inset-0 rounded-full border-[3px] border-[#e6e4df]"></div>
+            <div className="absolute inset-0 rounded-full border-[3px] border-t-[#1c1b1f] border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+            
+            {/* Center Checkmark/Clock Icon */}
+            <i className="ri-time-line text-2xl text-[#1c1b1f] font-semibold animate-pulse"></i>
+          </div>
+
+          <h2 className="text-xl font-bold tracking-tight text-[#1c1b1f] mb-1">DueRight</h2>
+          <p className="text-[13.5px] text-[#6b6b70] font-medium tracking-wide leading-relaxed animate-pulse">
+            {authChecking ? "Checking authentication..." : "Syncing your deadlines..."}
+          </p>
         </div>
       </div>
     )
@@ -355,7 +374,12 @@ export default function App() {
       {error && <div className="bg-[#fdf4f2] border border-[#c8442e]/15 text-[#c8442e] p-3 rounded-lg text-sm mb-4">{error}</div>}
 
       {loading ? (
-        <p className="text-sm text-[#6b6b70] italic my-4">Loading your deadlines&hellip;</p>
+        <div className="flex flex-col gap-4">
+          <div className="h-5 bg-[#e6e4df]/60 rounded-full w-24 mb-1 animate-pulse"></div>
+          <DeadlineSkeleton />
+          <DeadlineSkeleton />
+          <DeadlineSkeleton />
+        </div>
       ) : (
         <>
           <DeadlineList
